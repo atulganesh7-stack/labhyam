@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>കേരള കർഷക പദ്ധതി കണ്ടെത്തൽ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a3a2a;
+    --green-mid: #2d6a4f;
+    --green-bright: #40916c;
+    --green-light: #74c69d;
+    --green-pale: #d8f3dc;
+    --gold: #f4a261;
+    --gold-light: #fde68a;
+    --cream: #fefae0;
+    --white: #ffffff;
+    --text-dark: #1a2e1a;
+    --text-mid: #3d5a3e;
+    --text-light: #6b8f71;
+    --error: #c1121f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    background: var(--green-deep);
+    min-height: 100vh;
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(64,145,108,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(116,198,157,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(244,162,97,0.08) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 48px 20px 40px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(116,198,157,0.2);
+    border: 1px solid rgba(116,198,157,0.4);
+    color: var(--green-light);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .header h1 span {
+    color: var(--gold);
+    display: block;
+  }
+
+  .header p {
+    color: rgba(255,255,255,0.65);
+    font-size: 16px;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .kerala-emblem {
+    font-size: 52px;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 4px 16px rgba(116,198,157,0.4));
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .form-header {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .form-header-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  .form-header h2 {
+    color: white;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .form-header p {
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .form-body { padding: 32px; }
+
+  /* PROGRESS */
+  .progress-bar {
+    background: #e8f5e9;
+    height: 6px;
+    border-radius: 3px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-light));
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .steps-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #d0e8d0;
+    transition: all 0.3s;
+  }
+
+  .step-dot.active { background: var(--green-bright); width: 24px; border-radius: 4px; }
+  .step-dot.done { background: var(--green-mid); }
+
+  /* SECTIONS */
+  .form-section { display: none; animation: fadeIn 0.4s ease both; }
+  .form-section.active { display: block; }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--green-deep);
+    margin-bottom: 6px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .section-subtitle {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 28px;
+    font-weight: 400;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  /* FIELD */
+  .field { margin-bottom: 24px; }
+
+  .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-mid);
+    margin-bottom: 10px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .field label .required { color: var(--error); margin-left: 3px; }
+
+  .field select,
+  .field input[type="text"],
+  .field input[type="tel"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e0ebe0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    color: var(--text-dark);
+    background: #fafffe;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .field select:focus, .field input:focus {
+    outline: none;
+    border-color: var(--green-bright);
+    box-shadow: 0 0 0 4px rgba(64,145,108,0.12);
+  }
+
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232d6a4f' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 44px;
+  }
+
+  /* CHECKBOX */
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  @media (max-width: 480px) { .checkbox-grid { grid-template-columns: 1fr; } }
+
+  .checkbox-item { position: relative; }
+
+  .checkbox-item input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+  .checkbox-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 2px solid #e0ebe0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-dark);
+    transition: all 0.2s;
+    background: #fafffe;
+    line-height: 1.4;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .checkbox-item label::before {
+    content: '';
+    width: 18px; height: 18px;
+    border: 2px solid #c8dcc8;
+    border-radius: 5px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .checkbox-item input:checked + label {
+    border-color: var(--green-bright);
+    background: var(--green-pale);
+    color: var(--green-deep);
+  }
+
+  .checkbox-item input:checked + label::before {
+    background: var(--green-bright);
+    border-color: var(--green-bright);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* RADIO */
+  .radio-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .radio-item { position: relative; }
+
+  .radio-item input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+  .radio-item label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border: 2px solid #e0ebe0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-dark);
+    transition: all 0.2s;
+    background: #fafffe;
+    line-height: 1.5;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .radio-item label::before {
+    content: '';
+    width: 20px; height: 20px;
+    border: 2px solid #c8dcc8;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    background: white;
+  }
+
+  .radio-item input:checked + label {
+    border-color: var(--green-bright);
+    background: var(--green-pale);
+    color: var(--green-deep);
+    font-weight: 600;
+  }
+
+  .radio-item input:checked + label::before {
+    border-color: var(--green-bright);
+    background: radial-gradient(circle, var(--green-bright) 50%, white 50%);
+    border-width: 3px;
+  }
+
+  /* BUTTONS */
+  .nav-buttons { display: flex; gap: 12px; margin-top: 32px; }
+
+  .btn-back {
+    padding: 14px 24px;
+    border: 2px solid #e0ebe0;
+    border-radius: 12px;
+    background: white;
+    color: var(--text-mid);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover { border-color: var(--green-bright); color: var(--green-bright); }
+
+  .btn-next {
+    flex: 1;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(45,106,79,0.35);
+  }
+
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,106,79,0.45); }
+
+  .btn-find {
+    flex: 1;
+    padding: 16px 28px;
+    background: linear-gradient(135deg, var(--gold), #e76f51);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(244,162,97,0.4);
+  }
+
+  .btn-find:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(244,162,97,0.5); }
+
+  /* RESULTS */
+  #results-section { display: none; animation: fadeIn 0.5s ease both; }
+
+  .results-header {
+    background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+    padding: 28px 32px;
+    color: white;
+  }
+
+  .results-header h2 {
+    font-size: 24px;
+    margin-bottom: 6px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-weight: 800;
+  }
+
+  .results-header p {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .results-count {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--green-deep);
+    font-weight: 800;
+    font-size: 13px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-top: 12px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .results-body { padding: 28px 32px; }
+
+  .scheme-card {
+    border: 2px solid var(--green-pale);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .scheme-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(45,106,79,0.15); }
+
+  .scheme-card-header {
+    background: var(--green-pale);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .scheme-icon { font-size: 28px; flex-shrink: 0; }
+
+  .scheme-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-deep);
+    line-height: 1.4;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .scheme-dept {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .scheme-card-body { padding: 18px 20px; }
+
+  .scheme-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .scheme-label {
+    font-weight: 700;
+    color: var(--text-mid);
+    min-width: 120px;
+    flex-shrink: 0;
+    font-size: 12px;
+    padding-top: 2px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .scheme-value {
+    color: var(--text-dark);
+    line-height: 1.6;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .benefit-highlight {
+    background: linear-gradient(135deg, #fff3e0, #fde68a);
+    border: 1px solid #f4a261;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+    color: #7c4c00;
+    font-size: 14px;
+    margin-bottom: 14px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    line-height: 1.5;
+  }
+
+  .apply-btn {
+    display: inline-block;
+    background: var(--green-mid);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+    margin-top: 4px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .apply-btn:hover { background: var(--green-deep); transform: translateY(-1px); }
+
+  /* AIMS ALERT */
+  .aims-alert {
+    background: linear-gradient(135deg, #fff3cd, #fde68a);
+    border: 2px solid #f4a261;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .aims-alert-icon { font-size: 28px; flex-shrink: 0; }
+
+  .aims-alert h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #7c4c00;
+    margin-bottom: 6px;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    line-height: 1.4;
+  }
+
+  .aims-alert p {
+    font-size: 13px;
+    color: #8b5e00;
+    line-height: 1.6;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  .aims-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--green-mid);
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
+    border-bottom: 2px solid var(--green-mid);
+  }
+
+  .restart-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--green-bright);
+    border-radius: 12px;
+    background: white;
+    color: var(--green-mid);
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover { background: var(--green-pale); }
+
+  .footer-note {
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    margin-top: 32px;
+    line-height: 1.7;
+    font-family: 'Noto Sans Malayalam', sans-serif;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <span class="kerala-emblem">🌴</span>
+    <div class="header-badge">കേരള സർക്കാർ പദ്ധതികൾ</div>
+    <h1>നിങ്ങളുടെ <span>സൗജന്യ ആനുകൂല്യങ്ങൾ കണ്ടെത്തൂ</span></h1>
+    <p>നിങ്ങളുടെ വിവരങ്ങൾ നൽകൂ — നിങ്ങൾക്ക് അർഹതയുള്ള എല്ലാ സർക്കാർ പദ്ധതികളും ഉടൻ കണ്ടെത്തൂ.</p>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-card" id="form-card">
+
+    <div class="form-header">
+      <div class="form-header-icon">🌾</div>
+      <div>
+        <h2>കർഷക പദ്ധതി കണ്ടെത്തൽ</h2>
+        <p>ചുരുക്കം ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകൂ — 2 മിനിറ്റ് മതി</p>
+      </div>
+    </div>
+
+    <div class="form-body">
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+      <div class="steps-indicator" id="steps-indicator"></div>
+
+      <!-- SECTION 1 -->
+      <div class="form-section active" id="section-1">
+        <div class="section-title">അടിസ്ഥാന വിവരങ്ങൾ</div>
+        <div class="section-subtitle">നിങ്ങളെക്കുറിച്ച് കുറച്ച് പറയൂ</div>
+
+        <div class="field">
+          <label>നിങ്ങളുടെ പേര് <span style="color:#999;font-weight:400">(ഐച്ഛികം)</span></label>
+          <input type="text" id="name" placeholder="നിങ്ങളുടെ പേര് ഇവിടെ എഴുതൂ">
+        </div>
+
+        <div class="field">
+          <label>ജില്ല <span class="required">*</span></label>
+          <select id="district">
+            <option value="">നിങ്ങളുടെ ജില്ല തിരഞ്ഞെടുക്കൂ</option>
+            <option>തിരുവനന്തപുരം</option>
+            <option>കൊല്ലം</option>
+            <option>പത്തനംതിട്ട</option>
+            <option>ആലപ്പുഴ</option>
+            <option>കോട്ടയം</option>
+            <option>ഇടുക്കി</option>
+            <option>എറണാകുളം</option>
+            <option>തൃശ്ശൂർ</option>
+            <option>പാലക്കാട്</option>
+            <option>മലപ്പുറം</option>
+            <option>കോഴിക്കോട്</option>
+            <option>വയനാട്</option>
+            <option>കണ്ണൂർ</option>
+            <option>കാസർഗോഡ്</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>പ്രായം <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="age" id="age1" value="below18"><label for="age1">18 വയസ്സിൽ താഴെ</label></div>
+            <div class="radio-item"><input type="radio" name="age" id="age2" value="18-40"><label for="age2">18 മുതൽ 40 വയസ്സ് വരെ</label></div>
+            <div class="radio-item"><input type="radio" name="age" id="age3" value="41-60"><label for="age3">41 മുതൽ 60 വയസ്സ് വരെ</label></div>
+            <div class="radio-item"><input type="radio" name="age" id="age4" value="above60"><label for="age4">60 വയസ്സിനു മുകളിൽ</label></div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn-next" onclick="nextSection(1)">തുടരുക →</button>
+        </div>
+      </div>
+
+      <!-- SECTION 2 -->
+      <div class="form-section" id="section-2">
+        <div class="section-title">കൃഷി വിവരങ്ങൾ</div>
+        <div class="section-subtitle">നിങ്ങൾ എന്ത് കൃഷി ചെയ്യുന്നുവെന്ന് പറയൂ</div>
+
+        <div class="field">
+          <label>പ്രധാന തൊഴിൽ <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="occupation" id="occ1" value="own-farmer"><label for="occ1">🌾 കർഷകൻ — സ്വന്തം ഭൂമിയിൽ കൃഷി ചെയ്യുന്നു</label></div>
+            <div class="radio-item"><input type="radio" name="occupation" id="occ2" value="tenant-farmer"><label for="occ2">🤝 കുടിയാൻ കർഷകൻ — പാട്ടത്തിന് എടുത്ത ഭൂമിയിൽ കൃഷി</label></div>
+            <div class="radio-item"><input type="radio" name="occupation" id="occ3" value="agri-labourer"><label for="occ3">👷 കാർഷിക തൊഴിലാളി</label></div>
+            <div class="radio-item"><input type="radio" name="occupation" id="occ4" value="farmer-other"><label for="occ4">🏠 കൃഷിയും മറ്റ് വരുമാനവും ഉള്ളവർ</label></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>നിങ്ങൾ കൃഷി ചെയ്യുന്ന വിളകൾ <span class="required">*</span> <span style="color:#999;font-weight:400">(ബാധകമായവ എല്ലാം തിരഞ്ഞെടുക്കൂ)</span></label>
+          <div class="checkbox-grid">
+            <div class="checkbox-item"><input type="checkbox" id="crop-paddy" value="paddy"><label for="crop-paddy">🌾 നെല്ല് (അരി)</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-banana" value="banana"><label for="crop-banana">🍌 വാഴ</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-coconut" value="coconut"><label for="crop-coconut">🥥 തെങ്ങ്</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-vegetables" value="vegetables"><label for="crop-vegetables">🥦 പച്ചക്കറി</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-pepper" value="pepper"><label for="crop-pepper">🌶️ കുരുമുളക് / സുഗന്ധദ്രവ്യം</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-ginger" value="ginger"><label for="crop-ginger">🫚 ഇഞ്ചി / മഞ്ഞൾ</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-cashew" value="cashew"><label for="crop-cashew">🌰 കശുവണ്ടി</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-mango" value="mango"><label for="crop-mango">🥭 മാവ് / പഴവർഗ്ഗം</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-rubber" value="rubber"><label for="crop-rubber">🌳 റബ്ബർ</label></div>
+            <div class="checkbox-item"><input type="checkbox" id="crop-organic" value="organic"><label for="crop-organic">🌿 ജൈവ കൃഷി</label></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>ഭൂമിയുടെ വലിപ്പം <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="land" id="land0" value="no-land"><label for="land0">എനിക്ക് സ്വന്തം ഭൂമി ഇല്ല (കുടിയാൻ / തൊഴിലാളി)</label></div>
+            <div class="radio-item"><input type="radio" name="land" id="land1" value="small"><label for="land1">1 ഏക്കറിൽ കുറവ്</label></div>
+            <div class="radio-item"><input type="radio" name="land" id="land2" value="medium"><label for="land2">1 മുതൽ 2 ഏക്കർ വരെ</label></div>
+            <div class="radio-item"><input type="radio" name="land" id="land3" value="large"><label for="land3">2 മുതൽ 5 ഏക്കർ വരെ</label></div>
+            <div class="radio-item"><input type="radio" name="land" id="land4" value="very-large"><label for="land4">5 ഏക്കറിൽ കൂടുതൽ</label></div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn-back" onclick="prevSection(2)">← തിരിക</button>
+          <button class="btn-next" onclick="nextSection(2)">തുടരുക →</button>
+        </div>
+      </div>
+
+      <!-- SECTION 3 -->
+      <div class="form-section" id="section-3">
+        <div class="section-title">വ്യക്തിഗത വിവരങ്ങൾ</div>
+        <div class="section-subtitle">ശരിയായ പദ്ധതികൾ കണ്ടെത്താൻ ഇത് ആവശ്യമാണ്</div>
+
+        <div class="field">
+          <label>സമുദായ വിഭാഗം <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="category" id="cat1" value="general"><label for="cat1">പൊതുവിഭാഗം (General)</label></div>
+            <div class="radio-item"><input type="radio" name="category" id="cat2" value="obc"><label for="cat2">ഒബിസി — മറ്റ് പിന്നോക്ക വിഭാഗം</label></div>
+            <div class="radio-item"><input type="radio" name="category" id="cat3" value="sc"><label for="cat3">എസ്‌സി — പട്ടികജാതി</label></div>
+            <div class="radio-item"><input type="radio" name="category" id="cat4" value="st"><label for="cat4">എസ്‌ടി — പട്ടികവർഗ്ഗം</label></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>റേഷൻ കാർഡ് തരം <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="ration" id="rat1" value="yellow"><label for="rat1">🟡 മഞ്ഞ കാർഡ് — അന്ത്യോദയ അന്ന യോജന (AAY) — ഏറ്റവും ദരിദ്രരായ കുടുംബങ്ങൾ</label></div>
+            <div class="radio-item"><input type="radio" name="ration" id="rat2" value="pink"><label for="rat2">🩷 പിങ്ക് കാർഡ് — മുൻഗണനാ വിഭാഗം (PHH/BPL) — ദാരിദ്ര്യ രേഖയ്ക്ക് താഴെ</label></div>
+            <div class="radio-item"><input type="radio" name="ration" id="rat3" value="blue"><label for="rat3">🔵 നീല കാർഡ് — സംസ്ഥാന സബ്സിഡി വിഭാഗം (Non-Priority Subsidy)</label></div>
+            <div class="radio-item"><input type="radio" name="ration" id="rat4" value="white"><label for="rat4">⬜ വെള്ള കാർഡ് — ദാരിദ്ര്യ രേഖയ്ക്ക് മുകളിൽ (APL / Non-Priority)</label></div>
+            <div class="radio-item"><input type="radio" name="ration" id="rat5" value="none"><label for="rat5">റേഷൻ കാർഡ് ഇല്ല / അറിയില്ല</label></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>കുടുംബ വാർഷിക വരുമാനം <span class="required">*</span></label>
+          <select id="income">
+            <option value="">വരുമാനം തിരഞ്ഞെടുക്കൂ</option>
+            <option value="very-low">₹1 ലക്ഷത്തിൽ താഴെ</option>
+            <option value="low">₹1 മുതൽ 2 ലക്ഷം വരെ</option>
+            <option value="medium">₹2 മുതൽ 4 ലക്ഷം വരെ</option>
+            <option value="high">₹4 മുതൽ 6 ലക്ഷം വരെ</option>
+            <option value="very-high">₹6 ലക്ഷത്തിൽ കൂടുതൽ</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>AIMS പോർട്ടൽ രജിസ്ട്രേഷൻ <span class="required">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="aims" id="aims1" value="yes"><label for="aims1">✅ അതെ — ഞാൻ AIMS പോർട്ടലിൽ രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട്</label></div>
+            <div class="radio-item"><input type="radio" name="aims" id="aims2" value="no"><label for="aims2">❌ ഇല്ല — ഞാൻ രജിസ്റ്റർ ചെയ്തിട്ടില്ല</label></div>
+            <div class="radio-item"><input type="radio" name="aims" id="aims3" value="unknown"><label for="aims3">❓ AIMS എന്താണെന്ന് അറിയില്ല</label></div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="btn-back" onclick="prevSection(3)">← തിരിക</button>
+          <button class="btn-find" onclick="findSchemes()">🔍 എന്റെ പദ്ധതികൾ കണ്ടെത്തൂ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results-section">
+      <div class="results-header">
+        <h2 id="results-greeting">നിങ്ങൾക്ക് അർഹതയുള്ള പദ്ധതികൾ</h2>
+        <p id="results-subtext">നിങ്ങളുടെ പ്രൊഫൈൽ അനുസരിച്ച് ലഭ്യമായ പദ്ധതികൾ</p>
+        <div class="results-count" id="results-count"></div>
+      </div>
+      <div class="results-body" id="results-body"></div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    കേരള കർഷക പദ്ധതി കണ്ടെത്തൽ • പ്രോട്ടോടൈപ്പ് v1.0<br>
+    ഔദ്യോഗിക കേരള സർക്കാർ പോർട്ടലുകളിൽ നിന്ന് ശേഖരിച്ച വിവരങ്ങൾ<br>
+    അപേക്ഷിക്കുന്നതിന് മുൻപ് ഔദ്യോഗിക വെബ്സൈറ്റുകളിൽ വിശദാംശങ്ങൾ സ്ഥിരീകരിക്കുക
+  </div>
+
+</div>
+
+<script>
+const SCHEMES = [
+  {
+    id: "aims-registration",
+    name: "കേരള ഫാർമർ രജിസ്ട്രി (AIMS രജിസ്ട്രേഷൻ)",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "📋",
+    benefit: "ഔദ്യോഗിക കർഷക ID — എല്ലാ കേരള കർഷക പദ്ധതികൾക്കും ഇൻഷുറൻസിനും ബാങ്ക് ട്രാൻസ്ഫറിനും ഇത് നിർബന്ധമാണ്",
+    benefit_highlight: "⚠️ ആദ്യം ഇത് ചെയ്യണം — ഇല്ലെങ്കിൽ ഒരു പദ്ധതിയും ലഭിക്കില്ല",
+    documents: "ആധാർ നമ്പർ, ബാങ്ക് അക്കൗണ്ട് വിവരങ്ങൾ, ഭൂ രേഖകൾ",
+    apply_link: "https://aims.kerala.gov.in",
+    apply_text: "AIMS പോർട്ടലിൽ രജിസ്റ്റർ ചെയ്യൂ",
+    eligibility: (p) => true,
+    priority: 1,
+    always_show: true
+  },
+  {
+    id: "state-crop-insurance",
+    name: "സംസ്ഥാന വിള ഇൻഷുറൻസ് പദ്ധതി — കേരള",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "🛡️",
+    benefit: "വെള്ളപ്പൊക്കം, വരൾച്ച, കീടബാധ മൂലം വിള നഷ്ടമുണ്ടായാൽ നഷ്ടപരിഹാരം. നെൽ കർഷകർക്ക് 75% പ്രീമിയം സർക്കാർ അടയ്ക്കും.",
+    benefit_highlight: "💰 നിങ്ങളുടെ ഇൻഷുറൻസ് പ്രീമിയത്തിന്റെ 75% സർക്കാർ അടയ്ക്കും",
+    documents: "AIMS രജിസ്ട്രേഷൻ, ഭൂ രേഖകൾ, ബാങ്ക് വിവരങ്ങൾ, വിള വിശദാംശങ്ങൾ",
+    apply_link: "https://aims.kerala.gov.in",
+    apply_text: "AIMS പോർട്ടൽ വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => {
+      const notified = ['paddy','banana','coconut','pepper','ginger','cashew','mango','vegetables'];
+      return p.crops.some(c => notified.includes(c)) &&
+             ['own-farmer','tenant-farmer','farmer-other'].includes(p.occupation);
+    },
+    priority: 2
+  },
+  {
+    id: "pmfby",
+    name: "പ്രധാൻ മന്ത്രി ഫസൽ ബീമ യോജന (PMFBY)",
+    dept: "കേന്ദ്ര കൃഷി മന്ത്രാലയം, ഭാരത സർക്കാർ",
+    icon: "🏛️",
+    benefit: "ദേശീയ വിള ഇൻഷുറൻസ്. വിതയ്ക്കൽ തടഞ്ഞ നഷ്ടം, നിൽക്കുന്ന വിള നഷ്ടം, വിളവെടുപ്പ് ശേഷമുള്ള നഷ്ടം — എല്ലാം ഉൾക്കൊള്ളുന്നു.",
+    benefit_highlight: "💰 ഖാരിഫ് വിളകൾക്ക് വെറും 2% പ്രീമിയം — ബാക്കി സർക്കാർ",
+    documents: "ഭൂ ഉടമ സർട്ടിഫിക്കറ്റ്, വിതയ്ക്കൽ സർട്ടിഫിക്കറ്റ്, ബാങ്ക് പാസ്ബുക്ക്, ആധാർ",
+    apply_link: "https://pmfby.gov.in",
+    apply_text: "PMFBY പോർട്ടൽ വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => {
+      const pmfbyCrops = ['paddy','vegetables','ginger','pepper','cashew','mango','banana','coconut'];
+      return p.crops.some(c => pmfbyCrops.includes(c)) && p.occupation !== 'agri-labourer';
+    },
+    priority: 3
+  },
+  {
+    id: "wbcis",
+    name: "കാലാവസ്ഥ അടിസ്ഥാനമാക്കിയ വിള ഇൻഷുറൻസ് (WBCIS)",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "🌦️",
+    benefit: "കാലാവസ്ഥ ഡേറ്റ (മഴ, താപനില, കാറ്റ്) അനുസരിച്ച് നഷ്ടപരിഹാരം സ്വയം ലഭിക്കും. വ്യക്തിഗതമായി നഷ്ടം തെളിയിക്കേണ്ട ആവശ്യമില്ല.",
+    benefit_highlight: "✅ സ്വയം പണം ലഭിക്കും — നഷ്ടം വ്യക്തിഗതമായി തെളിയിക്കേണ്ട",
+    documents: "കൃഷി വകുപ്പ് അപേക്ഷ ഫോം, ഭൂ രേഖകൾ, ബാങ്ക് വിവരങ്ങൾ",
+    apply_link: "https://keralaagriculture.gov.in",
+    apply_text: "കൃഷി ഓഫീസ് വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => p.crops.some(c => ['paddy','banana','cashew','mango'].includes(c)),
+    priority: 4
+  },
+  {
+    id: "agri-machinery",
+    name: "കാർഷിക യന്ത്രോപകരണ സബ്സിഡി പദ്ധതി",
+    dept: "കേരള കാർഷിക യന്ത്രവൽക്കരണ മിഷൻ (KSAMM)",
+    icon: "🚜",
+    benefit: "ആധുനിക കൃഷി യന്ത്രങ്ങൾ — ട്രാക്ടർ, ഹാർവെസ്റ്റർ, ടില്ലർ — സബ്സിഡി നിരക്കിൽ ലഭ്യം. കൃഷി ചെലവ് ഗണ്യമായി കുറയും.",
+    benefit_highlight: "💰 ആധുനിക കൃഷി യന്ത്രങ്ങൾ സബ്സിഡി നിരക്കിൽ",
+    documents: "AIMS രജിസ്ട്രേഷൻ, അപേക്ഷ ഫോം",
+    apply_link: "http://agrimachinery.nic.in/index",
+    apply_text: "Agrimachinery പോർട്ടൽ വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => ['own-farmer','tenant-farmer','farmer-other'].includes(p.occupation) &&
+                        ['medium','large','very-large'].includes(p.land),
+    priority: 5
+  },
+  {
+    id: "micro-irrigation",
+    name: "ഒരു തുള്ളി കൂടുതൽ വിള — സൂക്ഷ്മ ജലസേചന സബ്സിഡി (PMKSY)",
+    dept: "കേന്ദ്ര കൃഷി മന്ത്രാലയം / കേരള കൃഷി വകുപ്പ്",
+    icon: "💧",
+    benefit: "ഡ്രിപ്പ് അല്ലെങ്കിൽ സ്പ്രിങ്ക്ലർ ജലസേചന സംവിധാനത്തിന് 55% സബ്സിഡി. ഒരു ഹെക്ടറിന് ₹30,000 അധിക വരുമാനം ലഭിക്കുന്നുവെന്ന് കർഷകർ റിപ്പോർട്ട് ചെയ്യുന്നു.",
+    benefit_highlight: "💰 55% സബ്സിഡി — ഒരു ഹെക്ടറിന് ₹30,000 അധിക വരുമാനം",
+    documents: "ആധാർ, ബാങ്ക് വിവരങ്ങൾ, ഭൂ രേഖകൾ, അനുമതി പ്രാപ്ത വിൽക്കുന്നയാളിൽ നിന്ന് ക്വോട്ടേഷൻ",
+    apply_link: "https://pmksy.gov.in",
+    apply_text: "PMKSY പോർട്ടൽ വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => p.occupation !== 'agri-labourer' && p.land !== 'no-land',
+    priority: 6
+  },
+  {
+    id: "organic-farming",
+    name: "ജൈവ കൃഷി സഹായ പദ്ധതി",
+    dept: "സ്റ്റേറ്റ് ഹോർട്ടിക്കൾച്ചർ മിഷൻ (SHM), കേരള",
+    icon: "🌿",
+    benefit: "ജൈവ കൃഷിയിലേക്ക് മാറാൻ ഒരു ഹെക്ടറിന് ₹10,000 (പരമാവധി 4 ഹെക്ടർ). വേം കോമ്പോസ്റ്റ് യൂണിറ്റ് നിർമ്മിക്കാൻ ₹50,000 ഗ്രാന്റ്.",
+    benefit_highlight: "💰 ₹40,000 വരെ നേരിട്ട് + കോമ്പോസ്റ്റ് യൂണിറ്റിന് ₹50,000",
+    documents: "ഭൂ രേഖകൾ, SHM അപേക്ഷ, ജൈവ കൃഷി പദ്ധതി",
+    apply_link: "https://shm.kerala.gov.in",
+    apply_text: "SHM കേരള വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) => {
+      const isFarmer = p.occupation !== 'agri-labourer';
+      const hasLand = p.land !== 'no-land';
+      const hasEligibleCrop = p.crops.includes('organic') ||
+             p.crops.some(c => ['vegetables','pepper','ginger','cashew','mango','banana','coconut'].includes(c));
+      return isFarmer && hasLand && hasEligibleCrop;
+    },
+    priority: 7
+  },
+  {
+    id: "homestead-veg",
+    name: "ഓണത്തിന് ഒരു മുറം പച്ചക്കറി (ഗൃഹ പച്ചക്കറി കൃഷി)",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "🥦",
+    benefit: "അടുത്തുള്ള കൃഷി ഭവനിൽ നിന്ന് സൗജന്യ അല്ലെങ്കിൽ സബ്സിഡി നിരക്കിൽ വിത്തുകളും തൈകളും ലഭിക്കും. ഭക്ഷ്യ സുരക്ഷ ഉറപ്പ്.",
+    benefit_highlight: "🆓 അടുത്ത കൃഷി ഭവനിൽ നിന്ന് സൗജന്യ വിത്തും തൈകളും",
+    documents: "അടുത്തുള്ള കൃഷി ഭവനിൽ അപേക്ഷ",
+    apply_link: "https://keralaagriculture.gov.in",
+    apply_text: "അടുത്ത കൃഷി ഭവൻ സന്ദർശിക്കൂ",
+    eligibility: (p) => p.crops.includes('vegetables') || p.ration === 'yellow' || p.ration === 'pink',
+    priority: 8
+  },
+  {
+    id: "pm-kisan",
+    name: "പ്രധാൻ മന്ത്രി കിസാൻ സമ്മാൻ നിധി (PM Kisan)",
+    dept: "കേന്ദ്ര കൃഷി മന്ത്രാലയം, ഭാരത സർക്കാർ",
+    icon: "💵",
+    benefit: "വർഷം ₹6,000 — ഓരോ 4 മാസത്തിലും ₹2,000 നേരിട്ട് ബാങ്ക് അക്കൗണ്ടിൽ. eKYC നിർബന്ധം — pmkisan.gov.in അല്ലെങ്കിൽ അടുത്ത CSC സെന്ററിൽ പൂർത്തിയാക്കൂ.",
+    benefit_highlight: "💰 വർഷം ₹6,000 ബാങ്കിൽ — eKYC നിർബന്ധം",
+    documents: "ആധാർ, ബാങ്ക് അക്കൗണ്ട്, നിങ്ങളുടെ പേരിലുള്ള ഭൂ രേഖകൾ, eKYC പൂർത്തി",
+    apply_link: "https://pmkisan.gov.in",
+    apply_text: "PM Kisan പോർട്ടൽ വഴി അപേക്ഷിക്കൂ",
+    eligibility: (p) =>
+      p.occupation === 'own-farmer' &&
+      p.land !== 'no-land' &&
+      p.income !== 'very-high',
+    priority: 2
+  },
+  {
+    id: "kfwfb",
+    name: "കേരള കർഷക ക്ഷേമനിധി ബോർഡ് (KFWFB) — പെൻഷൻ & ആനുകൂല്യങ്ങൾ",
+    dept: "കേരള കർഷക ക്ഷേമനിധി ബോർഡ്, കൃഷി വകുപ്പ്, കേരള",
+    icon: "🏦",
+    benefit: "അംഗത്വമെടുക്കുന്ന കർഷകർക്ക്: വ്യക്തിഗത പെൻഷൻ, കുടുംബ പെൻഷൻ, അസുഖ ആനുകൂല്യം, അപകട/വൈകല്യ ആനുകൂല്യം, ചികിത്സാ സഹായം, വിവാഹ-പ്രസവ അലവൻസ്, വിദ്യാഭ്യാസ സഹായം, മരണശേഷ ആനുകൂല്യം. 5 സെന്റ് മുതൽ 15 ഏക്കർ വരെ ഭൂമിയുള്ള, ₹5 ലക്ഷത്തിൽ കുറഞ്ഞ വാർഷിക വരുമാനമുള്ള, കൃഷി മുഖ്യ ഉപജീവനമുള്ള കർഷകർക്ക് അർഹത.",
+    benefit_highlight: "🛡️ പെൻഷൻ + അപകട ആനുകൂല്യം + ചികിത്സ + വിദ്യാഭ്യാസ സഹായം — ₹100 രജിസ്ട്രേഷൻ ഫീ മാത്രം",
+    documents: "AIMS രജിസ്ട്രേഷൻ, ആധാർ, ഭൂ രേഖകൾ, വരുമാന സർട്ടിഫിക്കറ്റ്, ബാങ്ക് അക്കൗണ്ട്",
+    apply_link: "https://kfwfb.kerala.gov.in",
+    apply_text: "KFWFB പോർട്ടലിൽ അംഗത്വ അപേക്ഷ",
+    eligibility: (p) => {
+      // Farmer (not labourer), has some land (not no-land), income not very-high
+      // Min 5 cents = small/medium/large/very-large land, max 15 acres
+      // Annual income < Rs 5 lakh = not very-high
+      return (p.occupation === 'own-farmer' || p.occupation === 'tenant-farmer' || p.occupation === 'farmer-other') &&
+             p.land !== 'no-land' &&
+             p.income !== 'very-high';
+    },
+    priority: 9
+  },
+  {
+    id: "agri-labour-pension",
+    name: "കാർഷിക തൊഴിലാളി ക്ഷേമ പെൻഷൻ (ALP)",
+    dept: "തദ്ദേശ സ്വയംഭരണ വകുപ്പ്, കേരള",
+    icon: "👴",
+    benefit: "60 വയസ്സ് കഴിഞ്ഞ കാർഷിക തൊഴിലാളികൾക്ക് മാസ പെൻഷൻ. കേരളത്തിൽ 10 വർഷമെങ്കിലും ഭൂ ഉടമകൾക്കുവേണ്ടി കാർഷിക ജോലി ചെയ്തവർ, Kerala Agricultural Workers Welfare Fund ൽ അംഗങ്ങളായവർ. അടുത്ത ഗ്രാമ പഞ്ചായത്ത്/മുനിസിപ്പാലിറ്റി/കോർപ്പറേഷൻ സെക്രട്ടറിക്ക് അപേക്ഷ സമർപ്പിക്കണം.",
+    benefit_highlight: "👴 60 വയസ്സിൽ കാർഷിക തൊഴിലാളികൾക്ക് മാസ പെൻഷൻ",
+    documents: "പ്രായം തെളിയിക്കുന്ന രേഖ, Kerala Agricultural Workers Welfare Fund അംഗത്വ തെളിവ്, 10 വർഷം കാർഷിക ജോലി ചെയ്തതിന്റെ തെളിവ്, കേരളത്തിൽ 10 വർഷം തുടർ താമസം തെളിയിക്കുന്ന രേഖ",
+    apply_link: "http://lsgkerala.gov.in/en/welfarepension/alp",
+    apply_text: "അടുത്ത പഞ്ചായത്ത്/മുനിസിപ്പൽ ഓഫീസ് സന്ദർശിക്കൂ",
+    eligibility: (p) => {
+      // Agricultural labourer aged above 60
+      return p.occupation === 'agri-labourer' && p.age === 'above60';
+    },
+    priority: 10
+  },
+  {
+    id: "cdb-aep",
+    name: "തെങ്ങ് കൃഷി വ്യാപന പദ്ധതി — CDB Area Expansion Programme",
+    dept: "കൊക്കോനട്ട് ഡെവലപ്മെന്റ് ബോർഡ് (CDB), ഭാരത സർക്കാർ",
+    icon: "🥥",
+    benefit: "ശാസ്ത്രീയ തെങ്ങ് കൃഷിക്ക് ₹56,000 പ്രതി ഹെക്ടർ സബ്സിഡി (2025 ൽ പരിഷ്കരിച്ചത്). കുറഞ്ഞത് 25 സെന്റ് (0.1 ഹെക്ടർ), കുറഞ്ഞത് 10 തെങ്ങ്, പരമാവധി 4 ഹെക്ടർ. 2 ഗഡുക്കളായി സബ്സിഡി. CDB ഓഫീസർ/കൃഷി ഓഫീസർ ഒപ്പിട്ട അപേക്ഷ CDB ഓഫീസിൽ സമർപ്പിക്കണം.",
+    benefit_highlight: "💰 ₹56,000 പ്രതി ഹെക്ടർ — 2025 ൽ സബ്സിഡി ഗണ്യമായി ഉയർത്തി",
+    documents: "CDB അപേക്ഷ ഫോം (coconutboard.gov.in), ഭൂ ഉടമ/കൃഷി ഓഫീസർ സർട്ടിഫിക്കേഷൻ, ആധാർ, ബാങ്ക് അക്കൗണ്ട്",
+    apply_link: "https://coconutboard.gov.in/scheme.aspx",
+    apply_text: "CDB പദ്ധതി പോർട്ടൽ — അപേക്ഷ ഡൗൺലോഡ്",
+    eligibility: (p) => {
+      // Coconut farmers with at least some land
+      return p.crops.includes('coconut') && p.land !== 'no-land';
+    },
+    priority: 11
+  },
+  {
+    id: "rpis",
+    name: "റബ്ബർ ഉൽപ്പാദന പ്രോത്സാഹന പദ്ധതി (RPIS)",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "🌳",
+    benefit: "റബ്ബർ വിലത്തകർച്ചയിൽ നിന്ന് ചെറുകിട കർഷകരെ സംരക്ഷിക്കാൻ കേരള സർക്കാർ ഏർപ്പെടുത്തിയ വില സഹായ പദ്ധതി. ₹150/കിലോ മിനിമം വില ഉറപ്പ്; പ്രതി ഹെക്ടർ പ്രതി മാസം 150 കിലോ വരെ; വ്യത്യാസം നേരിട്ട് ബാങ്ക് അക്കൗണ്ടിൽ. ഉൽപ്പാദന ചെലവ് ഫലപ്രദമായി നിയന്ത്രിക്കാൻ സഹായകം.",
+    benefit_highlight: "💰 റബ്ബർ വിലത്തകർച്ചയ്ക്ക് സർക്കാർ നഷ്ടപരിഹാരം — ₹150/കിലോ മിനിമം വില",
+    documents: "AIMS രജിസ്ട്രേഷൻ, ഭൂ രേഖകൾ, റബ്ബർ കൃഷി വിശദാംശങ്ങൾ, ബാങ്ക് അക്കൗണ്ട്",
+    apply_link: "http://ebt.kerala.gov.in/index.php/home/rubberlinks",
+    apply_text: "ebt.kerala.gov.in — RPIS അപേക്ഷ",
+    eligibility: (p) => {
+      return p.crops.includes('rubber') && p.land !== 'no-land';
+    },
+    priority: 12
+  },
+  {
+    id: "karshaka-pension",
+    name: "കർഷക പെൻഷൻ — ചെറുകിട / നാമമാത്ര കർഷകർക്ക്",
+    dept: "കൃഷി വകുപ്പ്, കേരള സർക്കാർ",
+    icon: "🧑‍🌾",
+    benefit: "60 വയസ്സ് കഴിഞ്ഞ ചെറുകിട-നാമമാത്ര കർഷകർക്ക് ₹1,600 പ്രതിമാസ പെൻഷൻ. 2025 മേയ് വരെ 2,79,105 കർഷകർ ഈ പദ്ധതിയിൽ. KFWFB ക്ഷേമനിധി പെൻഷനിൽ നിന്ന് തികച്ചും വ്യത്യസ്തമായ ഒരു പ്രത്യേക പദ്ധതിയാണ് ഇത്. 5 സെന്റ് മുതൽ 2.5 ഏക്കർ (1 ഹെക്ടർ) വരെ ഭൂമിയുള്ള, ₹1.5 ലക്ഷത്തിൽ കുറഞ്ഞ വാർഷിക കുടുംബ വരുമാനമുള്ള, കൃഷി പ്രധാന ഉപജീവന മാർഗ്ഗമായ കർഷകർക്ക് അർഹത.",
+    benefit_highlight: "👴 60 വയസ്സിന് ശേഷം ₹1,600/മാസം — 2.79 ലക്ഷം കർഷകർ ഇപ്പോൾ ആനുകൂല്യം നേടുന്നു",
+    documents: "AIMS രജിസ്ട്രേഷൻ, ആധാർ, ഭൂ രേഖകൾ (5 സെന്റ് – 2.5 ഏക്കർ), വരുമാന സർട്ടിഫിക്കറ്റ് (₹1.5 ലക്ഷത്തിൽ കുറഞ്ഞത്), ബാങ്ക് അക്കൗണ്ട്",
+    apply_link: "https://keralaagriculture.gov.in/en/karshakapension/",
+    apply_text: "അടുത്ത കൃഷി ഭവനിൽ അപേക്ഷ സമർപ്പിക്കൂ",
+    eligibility: (p) => {
+      // Small/marginal farmers aged 60+, land 5 cents to 2.5 acres (small/medium), income not high/very-high
+      return (p.occupation === 'own-farmer' || p.occupation === 'tenant-farmer') &&
+             p.age === 'above60' &&
+             (p.land === 'small' || p.land === 'medium') &&
+             (p.income === 'very-low' || p.income === 'low');
+    },
+    priority: 13
+  },
+  {
+    id: "pmkmy",
+    name: "PM കിസാൻ മാൻദൻ യോജന (PMKMY) — കർഷക പെൻഷൻ",
+    dept: "കേന്ദ്ര കൃഷി മന്ത്രാലയം, ഭാരത സർക്കാർ",
+    icon: "🏦",
+    benefit: "18-40 വയസ്സുള്ള ചെറുകിട-നാമമാത്ര കർഷകർക്ക് (2 ഹെക്ടർ വരെ ഭൂമി) ₹55-₹200/മാസം അടച്ചാൽ 60 വയസ്സിൽ ₹3,000/മാസം ഗ്യാരന്റീഡ് പെൻഷൻ. കേന്ദ്ര സർക്കാർ തുല്യ തുക ഫണ്ടിലേക്ക് അടയ്ക്കും. PM Kisan ഇൻസ്റ്റാൾമെൻ്റ് നേരിട്ട് സ്കീം ചന്ദ വിഹിതത്തിനായി ഉപയോഗിക്കാം.",
+    benefit_highlight: "💰 60 വയസ്സിന് ശേഷം ₹3,000/മാസം ഗ്യാരന്റീ — സർക്കാർ തുല്യ തുക അടയ്ക്കും",
+    documents: "ആധാർ, ബാങ്ക് അക്കൗണ്ട്, ഭൂ രേഖകൾ (2 ഹെക്ടർ വരെ). CSC സെന്ററിൽ ബയോമെട്രിക് വഴി എൻറോൾ.",
+    apply_link: "https://pmkmy.gov.in",
+    apply_text: "pmkmy.gov.in — CSC സെന്ററിൽ എൻറോൾ ചെയ്യൂ",
+    eligibility: (p) => {
+      // Small/marginal farmers (own/tenant), age 18-40, land up to 2 hectares (small/medium), not govt employee/income-taxpayer
+      return (p.occupation === 'own-farmer' || p.occupation === 'tenant-farmer') &&
+             (p.age === '18-40') &&
+             (p.land === 'small' || p.land === 'medium') &&
+             p.income !== 'very-high';
+    },
+    priority: 14
+  },
+  {
+    id: "kcc",
+    name: "കിസാൻ ക്രെഡിറ്റ് കാർഡ് (KCC) — കർഷക വായ്പ",
+    dept: "കേന്ദ്ര സർക്കാർ / NABARD / ദേശസാൽകൃത-സഹകരണ ബാങ്കുകൾ",
+    icon: "💳",
+    benefit: "കൃഷി ആവശ്യങ്ങൾക്ക് ₹5 ലക്ഷം വരെ വായ്പ — വെറും 4% പലിശ (7% നിരക്കിൽ, കൃത്യസമയ തിരിച്ചടവിന് 3% കൂടി സർക്കാർ ഇളവ്). ₹2 ലക്ഷം വരെ ജാമ്യം ഇല്ലാതെ. ഒരിക്കൽ ഡോക്യുമെൻ്റ്; 5 വർഷത്തേക്ക് പ്രാബല്യം. കർഷകർ, കുടിയാൻ കർഷകർ, SHG/JLG ഗ്രൂപ്പുകൾ എല്ലാം അർഹർ.",
+    benefit_highlight: "💳 4% പലിശ നിരക്കിൽ ₹5 ലക്ഷം വരെ കൃഷി വായ്പ — ₹2 ലക്ഷം വരെ ജാമ്യം ഇല്ല",
+    documents: "ആധാർ, ഭൂ ഉടമ / കൃഷി ഓഫീസർ സർട്ടിഫിക്കറ്റ്, ബാങ്ക് പാസ്ബുക്ക്, 2 ഫോട്ടോ. ₹2 ലക്ഷത്തിൽ കൂടുതലാണെങ്കിൽ ഭൂ ജാമ്യം ആവശ്യം.",
+    apply_link: "https://www.sbi.co.in/web/agri-rural/agriculture-banking/crop-loan/kisan-credit-card",
+    apply_text: "അടുത്ത ബാങ്ക്/PACS/CSC — KCC അപേക്ഷ",
+    eligibility: (p) => {
+      // All farmers (not pure agri-labourer), with any land (own or leased), all income levels
+      return p.occupation !== 'agri-labourer' && p.land !== 'no-land';
+    },
+    priority: 15
+  },
+  {
+    id: "free-electricity",
+    name: "കാർഷിക സൗജന്യ വൈദ്യുതി പദ്ധതി",
+    dept: "കൃഷി വകുപ്പ് & KSEB, കേരള സർക്കാർ",
+    icon: "⚡",
+    benefit: "ജലസേചന പമ്പ് സെറ്റുകൾ ഉപയോഗിക്കുന്ന കർഷകർക്ക് വൈദ്യുതി ബിൽ പൂർണ്ണ സൗജന്യം. KSEB ബിൽ നേരിട്ട് കൃഷി ഭവൻ വഴി കൃഷി വകുപ്പ് അടയ്ക്കും — കർഷകൻ ഒരു രൂപ പോലും നൽകേണ്ടതില്ല. കുറഞ്ഞത് 30 സെന്റ് ഭൂമി (പച്ചക്കറിക്ക് 10 സെന്റ്) ഉള്ള AIMS-ൽ രജിസ്ട്രേർഡ് കർഷകർക്ക് അർഹത.",
+    benefit_highlight: "⚡ ജലസേചന വൈദ്യുതി ബിൽ 100% സൗജന്യം — KSEB ബിൽ കൃഷി ഭവൻ അടയ്ക്കും",
+    documents: "AIMS രജിസ്ട്രേഷൻ, KSEB കണക്ഷൻ വിവരങ്ങൾ, ഭൂ രേഖകൾ. കൃഷി ഭവനിൽ ഫോം സമർപ്പിക്കൂ.",
+    apply_link: "https://keralaagriculture.gov.in/en/free-electricity/",
+    apply_text: "കൃഷി ഭവൻ — സൗജന്യ വൈദ്യുതി അപേക്ഷ ഫോം",
+    eligibility: (p) => {
+      // Farmers with land who use irrigation pump sets — own/tenant/farmer-other with any land
+      return (p.occupation === 'own-farmer' || p.occupation === 'tenant-farmer' || p.occupation === 'farmer-other') &&
+             p.land !== 'no-land';
+    },
+    priority: 16
+  },
+  {
+    id: "paddy-bonus-royalty",
+    name: "നെൽകൃഷി പ്രോത്സാഹന ബോണസ് & ഭൂ ഉടമ റോയൽറ്റി",
+    dept: "കേരള സർക്കാർ / Supplyco / കൃഷി വകുപ്പ്",
+    icon: "🌾",
+    benefit: "നെൽ കർഷകർക്ക്: (1) Supplyco വഴി നെൽ്ല് വിൽക്കുമ്പോൾ MSP (₹23.69/കിലോ) + കേരള ബോണസ് (₹6.31/കിലോ) = ₹30/കിലോ ഫലപ്രദ സംഭരണ വില; (2) ₹5,500/ഹെക്ടർ ഇൻപുട്ട് സഹായം AIMS വഴി; (3) നെൽ‌പ്പാടം ഉടമകൾക്ക് ₹3,000/ഹെക്ടർ ഭൂ ഉടമ റോയൽറ്റി — നെൽ‌പ്പാടം നിലനിർത്തുന്നതിന് കേരളം നൽകുന്ന ഭൂ ഉടമ ആനുകൂല്യം.",
+    benefit_highlight: "💰 ₹30/കിലോ സംഭരണ വില + ₹5,500/ഹെക്ടർ ഇൻപുട്ട് + ₹3,000/ഹെക്ടർ റോയൽറ്റി",
+    documents: "AIMS രജിസ്ട്രേഷൻ, Supplyco ഓൺലൈൻ രജിസ്ട്രേഷൻ, ഭൂ രേഖകൾ, ബാങ്ക് അക്കൗണ്ട് (ആധാർ ലിങ്ക്ഡ്)",
+    apply_link: "https://supplyco.kerala.gov.in",
+    apply_text: "Supplyco & AIMS — നെൽ‌കർഷക രജിസ്ട്രേഷൻ",
+    eligibility: (p) => {
+      // Paddy farmers only, with land
+      return p.crops.includes('paddy') && p.land !== 'no-land';
+    },
+    priority: 17
+  }
+];
+
+let currentSection = 1;
+const totalSections = 3;
+
+window.onload = () => {
+  const indicator = document.getElementById('steps-indicator');
+  for (let i = 1; i <= totalSections; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i === 1 ? ' active' : '');
+    dot.id = `dot-${i}`;
+    indicator.appendChild(dot);
+  }
+  updateProgress();
+};
+
+function updateProgress() {
+  const pct = ((currentSection - 1) / totalSections) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+  for (let i = 1; i <= totalSections; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (!dot) continue;
+    dot.className = 'step-dot' + (i === currentSection ? ' active' : i < currentSection ? ' done' : '');
+  }
+}
+
+function validateSection(n) {
+  if (n === 1) {
+    if (!document.getElementById('district').value) { alert('ദയവായി നിങ്ങളുടെ ജില്ല തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.querySelector('input[name="age"]:checked')) { alert('ദയവായി നിങ്ങളുടെ പ്രായ വിഭാഗം തിരഞ്ഞെടുക്കൂ.'); return false; }
+  }
+  if (n === 2) {
+    if (!document.querySelector('input[name="occupation"]:checked')) { alert('ദയവായി നിങ്ങളുടെ തൊഴിൽ തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.querySelectorAll('input[type="checkbox"]:checked').length) { alert('ദയവായി ഒരു വിള എങ്കിലും തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.querySelector('input[name="land"]:checked')) { alert('ദയവായി ഭൂമിയുടെ വലിപ്പം തിരഞ്ഞെടുക്കൂ.'); return false; }
+  }
+  if (n === 3) {
+    if (!document.querySelector('input[name="category"]:checked')) { alert('ദയവായി സമുദായ വിഭാഗം തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.querySelector('input[name="ration"]:checked')) { alert('ദയവായി റേഷൻ കാർഡ് തരം തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.getElementById('income').value) { alert('ദയവായി വരുമാനം തിരഞ്ഞെടുക്കൂ.'); return false; }
+    if (!document.querySelector('input[name="aims"]:checked')) { alert('ദയവായി AIMS ചോദ്യത്തിന് ഉത്തരം നൽകൂ.'); return false; }
+  }
+  return true;
+}
+
+function nextSection(current) {
+  if (!validateSection(current)) return;
+  document.getElementById(`section-${current}`).classList.remove('active');
+  currentSection = current + 1;
+  document.getElementById(`section-${currentSection}`).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevSection(current) {
+  document.getElementById(`section-${current}`).classList.remove('active');
+  currentSection = current - 1;
+  document.getElementById(`section-${currentSection}`).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getProfile() {
+  return {
+    name: document.getElementById('name').value.trim(),
+    district: document.getElementById('district').value,
+    age: document.querySelector('input[name="age"]:checked')?.value,
+    occupation: document.querySelector('input[name="occupation"]:checked')?.value,
+    crops: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value),
+    land: document.querySelector('input[name="land"]:checked')?.value,
+    category: document.querySelector('input[name="category"]:checked')?.value,
+    ration: document.querySelector('input[name="ration"]:checked')?.value,
+    income: document.getElementById('income').value,
+    aims: document.querySelector('input[name="aims"]:checked')?.value
+  };
+}
+
+function findSchemes() {
+  if (!validateSection(3)) return;
+  const profile = getProfile();
+  const matched = SCHEMES.filter(s => s.always_show || s.eligibility(profile)).sort((a,b) => a.priority - b.priority);
+  showResults(profile, matched);
+}
+
+function showResults(profile, schemes) {
+  document.getElementById('section-3').classList.remove('active');
+  document.getElementById('steps-indicator').style.display = 'none';
+  document.getElementById('progress').style.width = '100%';
+  document.getElementById('results-section').style.display = 'block';
+
+  const name = profile.name || 'കർഷകൻ';
+  const notAims = profile.aims === 'no' || profile.aims === 'unknown';
+  const count = schemes.filter(s => s.id !== 'aims-registration').length;
+
+  document.getElementById('results-greeting').textContent = `${name}! 👋 നിങ്ങളുടെ ഫലങ്ങൾ`;
+  document.getElementById('results-subtext').textContent = `${profile.district} ജില്ലയിലെ നിങ്ങളുടെ പ്രൊഫൈൽ അനുസരിച്ച്`;
+  document.getElementById('results-count').textContent = `${count} പദ്ധതികൾ നിങ്ങൾക്ക് ലഭ്യമാണ്`;
+
+  const body = document.getElementById('results-body');
+  body.innerHTML = '';
+
+  if (notAims) {
+    body.innerHTML += `
+      <div class="aims-alert">
+        <div class="aims-alert-icon">⚠️</div>
+        <div>
+          <h3>ആദ്യം AIMS പോർട്ടലിൽ രജിസ്റ്റർ ചെയ്യൂ — ഇത് അടിയന്തിരമാണ്</h3>
+          <p>നിങ്ങൾ AIMS പോർട്ടലിൽ (aims.kerala.gov.in) രജിസ്റ്റർ ചെയ്തിട്ടില്ല. ഇല്ലെങ്കിൽ വിള ഇൻഷുറൻസ്, സബ്സിഡി, നേരിട്ടുള്ള ബാങ്ക് ട്രാൻസ്ഫർ ഒന്നും ലഭിക്കില്ല — നിങ്ങൾ അർഹൻ ആണെങ്കിൽ പോലും.</p>
+          <a href="https://aims.kerala.gov.in" target="_blank" class="aims-link">aims.kerala.gov.in ൽ സൗജന്യ രജിസ്ട്രേഷൻ →</a>
+        </div>
+      </div>
+    `;
+  }
+
+  schemes.forEach((scheme, i) => {
+    if (scheme.id === 'aims-registration' && !notAims) return;
+    body.innerHTML += `
+      <div class="scheme-card" style="animation-delay:${i*0.08}s">
+        <div class="scheme-card-header">
+          <div class="scheme-icon">${scheme.icon}</div>
+          <div>
+            <div class="scheme-name">${scheme.name}</div>
+            <div class="scheme-dept">${scheme.dept}</div>
+          </div>
+        </div>
+        <div class="scheme-card-body">
+          <div class="benefit-highlight">${scheme.benefit_highlight}</div>
+          <div class="scheme-row">
+            <span class="scheme-label">ആനുകൂല്യം</span>
+            <span class="scheme-value">${scheme.benefit}</span>
+          </div>
+          <div class="scheme-row">
+            <span class="scheme-label">രേഖകൾ</span>
+            <span class="scheme-value">${scheme.documents}</span>
+          </div>
+          <a href="${scheme.apply_link}" target="_blank" class="apply-btn">📝 ${scheme.apply_text}</a>
+        </div>
+      </div>
+    `;
+  });
+
+  body.innerHTML += `<button class="restart-btn" onclick="location.reload()">🔄 മറ്റൊരു കർഷകനായി വീണ്ടും പരിശോധിക്കൂ</button>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
